@@ -41,4 +41,4 @@ Hot days. Electric skies. → Heat rising. Storms forming.
 
 Without the parameter, the upstream page is returned unchanged.
 
-The Edge Function rewrites both the rendered headline and React's serialized hydration data, so the personalized text remains stable after the app loads.
+The Edge Function rewrites the rendered HTML, React's serialized hydration data, and the client module bundle. The parameter is propagated through JavaScript imports so React renders the same personalized headline after hydration.
