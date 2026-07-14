@@ -40,3 +40,5 @@ Hot days. Electric skies. → Heat rising. Storms forming.
 ```
 
 Without the parameter, the upstream page is returned unchanged.
+
+The injected script preserves the personalized headline if client-side hydration redraws the original component.
