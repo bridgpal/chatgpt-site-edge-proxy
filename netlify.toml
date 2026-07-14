@@ -1,7 +1,8 @@
 [build]
   publish = "public"
 
-[[edge_functions]]
-  function = "proxy-chatgpt-site"
-  path = "/*"
-
+[[redirects]]
+  from = "/*"
+  to = "https://cuddle-club-plushies.youvalv.chatgpt.site/:splat"
+  status = 200
+  force = true

@@ -1,6 +1,6 @@
 # ChatGPT Site Edge Proxy
 
-TL;DR: this repository demonstrates two stages of proxying a public ChatGPT Site through Netlify. The original eight-line Edge Function is the minimal transparent proxy. The function shipped in this repository adds conditional personalization with `?utm=rain` and rewrites the client modules so the change survives React hydration.
+TL;DR: this repository demonstrates proxying a public ChatGPT Site through Netlify. The Edge Function shows how to customize proxied responses. The active `netlify.toml` configuration is a root-level proxy rewrite to the Cuddle Club site, which also keeps its root-relative assets working through the proxy.
 
 ## Version 1: the original proxy
 
@@ -37,18 +37,22 @@ To ensure the browser loads the personalized bundle, the function propagates `?u
 
 This copy replacement is intentionally specific to the example site. The proxy pattern should work for similarly generated public ChatGPT Sites, but another site needs its own source and replacement strings.
 
-## Netlify configuration
+## Root-level proxy rewrite
 
-`netlify.toml` maps every request to the Edge Function:
+The active `netlify.toml` configuration proxies every request to the Cuddle Club ChatGPT Site:
 
 ```toml
-[[edge_functions]]
-function = "proxy-chatgpt-site"
-path = "/*"
+[[redirects]]
+from = "/*"
+to = "https://cuddle-club-plushies.youvalv.chatgpt.site/:splat"
+status = 200
+force = true
 ```
+
+Using the proxy at the root ensures URLs such as `/assets/index.css` and `/plush-crew.png` are sent to the same upstream site. A subpath-only rewrite would return the page HTML but would not automatically rewrite those root-relative asset URLs.
 
 ## Deploy it
 
 Create a new Netlify project from this repository. No build command or environment variables are required.
 
-To proxy another public ChatGPT site, change the `upstream` URL in `netlify/edge-functions/proxy-chatgpt-site.js`.
+To proxy another public ChatGPT Site with the TOML rewrite, change the target URL in `netlify.toml`. To enable response customization instead, map the included Edge Function to the desired paths.
