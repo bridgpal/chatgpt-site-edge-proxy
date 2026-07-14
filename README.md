@@ -30,3 +30,13 @@ path = "/*"
 Create a new Netlify project from this repository. No build command or environment variables are required.
 
 To proxy another public ChatGPT site, change the `upstream` URL in `netlify/edge-functions/proxy-chatgpt-site.js`.
+
+## Edge personalization experiment
+
+Add `?utm=rain` to replace the hero headline at the edge:
+
+```text
+Hot days. Electric skies. → Heat rising. Storms forming.
+```
+
+Without the parameter, the upstream page is returned unchanged.
