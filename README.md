@@ -1,10 +1,10 @@
 # ChatGPT Site Edge Proxy
 
-A minimal Netlify Edge Function that proxies a public ChatGPT site.
+TL;DR: this repository demonstrates two stages of proxying a public ChatGPT Site through Netlify. The original eight-line Edge Function is the minimal transparent proxy. The function shipped in this repository adds conditional personalization with `?utm=rain` and rewrites the client modules so the change survives React hydration.
 
-## How it works
+## Version 1: the original proxy
 
-The function replaces the incoming origin with the ChatGPT site's origin, preserves the path and query string, and forwards the request. Because the site's assets use root-relative URLs, they are fetched through the same proxy.
+The original experiment only changes the request origin. It preserves the path, query string, method, headers, and body. Because this ChatGPT Site uses root-relative asset URLs, its CSS, JavaScript, and images are requested through the same Netlify proxy.
 
 ```js
 const upstream = "https://atlanta-july-weather-2026.bridgpal.chatgpt.site";
@@ -17,7 +17,29 @@ export default function proxy(request) {
 }
 ```
 
-`netlify.toml` maps every path to the function:
+The `host` header must be removed so the upstream receives its own hostname instead of the Netlify hostname.
+
+## Version 2: the shipped personalized proxy
+
+The Edge Function in [`netlify/edge-functions/proxy-chatgpt-site.js`](netlify/edge-functions/proxy-chatgpt-site.js) starts with the same proxy behavior and adds a query-based variant.
+
+- `/` returns the original site unchanged.
+- `/?utm=rain` changes the hero from `Hot days. Electric skies.` to `Heat rising. Storms forming.`
+- Other `utm` values return the original site unchanged.
+
+Changing only the server-rendered HTML is not enough. React hydrates the page using its serialized data and client bundle, which can restore the original text. The shipped function therefore rewrites three places:
+
+1. The rendered HTML.
+2. React's serialized hydration data in the HTML response.
+3. The JavaScript page bundle containing the original headline.
+
+To ensure the browser loads the personalized bundle, the function propagates `?utm=rain` through JavaScript module imports. It removes `content-encoding` and `content-length` after rewriting because the response body has changed.
+
+This copy replacement is intentionally specific to the example site. The proxy pattern should work for similarly generated public ChatGPT Sites, but another site needs its own source and replacement strings.
+
+## Netlify configuration
+
+`netlify.toml` maps every request to the Edge Function:
 
 ```toml
 [[edge_functions]]
@@ -25,20 +47,8 @@ function = "proxy-chatgpt-site"
 path = "/*"
 ```
 
-## Try it
+## Deploy it
 
 Create a new Netlify project from this repository. No build command or environment variables are required.
 
 To proxy another public ChatGPT site, change the `upstream` URL in `netlify/edge-functions/proxy-chatgpt-site.js`.
-
-## Edge personalization experiment
-
-Add `?utm=rain` to replace the hero headline at the edge:
-
-```text
-Hot days. Electric skies. → Heat rising. Storms forming.
-```
-
-Without the parameter, the upstream page is returned unchanged.
-
-The Edge Function rewrites the rendered HTML, React's serialized hydration data, and the client module bundle. The parameter is propagated through JavaScript imports so React renders the same personalized headline after hydration.
