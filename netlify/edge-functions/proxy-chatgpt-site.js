@@ -10,11 +10,9 @@ export default function proxy(request) {
       !response.headers.get("content-type")?.includes("text/html")
     ) return response;
 
-    const headline = "Heat rising.<br/><em>Storms forming.</em>";
-    const personalize = `<script>(()=>{const set=()=>{const h=document.querySelector("h1");if(h&&h.innerHTML!=="${headline}")h.innerHTML="${headline}"};new MutationObserver(set).observe(document.documentElement,{subtree:true,childList:true,characterData:true});set()})()</script>`;
     const html = (await response.text())
-      .replace("Hot days.<br/><em>Electric skies.</em>", headline)
-      .replace("</body>", personalize + "</body>");
+      .replaceAll("Hot days.", "Heat rising.")
+      .replaceAll("Electric skies.", "Storms forming.");
     const headers = new Headers(response.headers);
     headers.delete("content-encoding");
     headers.delete("content-length");
